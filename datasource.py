@@ -14,6 +14,8 @@ import cv2
 import datetime
 import sys
 
+CUDA = torch.cuda.is_available()
+
 def logging(string):
     print(str(datetime.datetime.now())+' '+str(string))
     sys.stdout.flush()
@@ -255,10 +257,10 @@ class ML_Dataset():
     def get_datasets(self, dataset_name):
 	    # Load dataset based on dataset name
         if dataset_name == 'Mnist':
-            train_dataset = datasets.MNIST(root='/data/mnist/', train=True, transform=transforms.ToTensor(), download=True)
-            test_dataset = datasets.MNIST(root='/data/mnist/', train=False, transform=transforms.ToTensor())
+            train_dataset = datasets.MNIST(root='/home/yisu/data/mnist/', train=True, transform=transforms.ToTensor(), download=True)
+            test_dataset = datasets.MNIST(root='/home/yisu/data/mnist/', train=False, transform=transforms.ToTensor())
             class_num = 10
-            mediator_length = 6
+            mediator_length = 3
         if dataset_name == 'chestxray2':
             x_train_address, y_train, x_test_address, y_test = xray2_load_data()
             transform = transforms.ToTensor()
@@ -278,7 +280,8 @@ class ML_Dataset():
     def set_seed(self, seed):
         random.seed(seed)
         torch.manual_seed(seed)
-        torch.cuda.manual_seed(seed)
+        if CUDA:
+            torch.cuda.manual_seed(seed)
         torch.backends.cudnn.deterministic = True
         np.random.seed(seed)
         torch.backends.cudnn.benchmark = False

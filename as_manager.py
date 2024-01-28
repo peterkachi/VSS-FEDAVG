@@ -25,14 +25,7 @@ class AS_Manager:
         group = dist.new_group([i for i in range(world_size)])
         
 		
-        # send tensor to 1
-        a = torch.tensor([3,5,7,2])
-        if rank == 0:
-            a += 1
-            dist.send(tensor=a, dst=1)
-        elif rank == 1:
-            dist.recv(tensor=a, src=0)
-        logging('a: ' + str(a))
+
         self.sync_frequency = sync_frequency
         self.group = group
         self.world_size = world_size # Number of clients
@@ -130,7 +123,6 @@ class AS_Manager:
             self.pretrain_model.cuda()
             self.model.cuda()
             #self.model_added.cuda()
-        logging('mokaiwei5')
         logging('vae_model size: ' + str(self.model_size) + '; model size: ' + str(self.model_size_added))
 		
         
@@ -181,13 +173,7 @@ class AS_Manager:
 		
         if self.rank == 0:
             self.set_mediator()
-			
-        #test
-        b = torch.tensor([3,5,7,2])
-        if self.rank == 0:
-            b = b + 1
-        dist.broadcast(tensor=b, src=0, group=self.group)
-        logging('b: ' + str(b))
+
 			
         mediators_num_transfered = torch.tensor(self.mediators_num)
         dist.broadcast(mediators_num_transfered, src=0, group=self.group)
@@ -321,7 +307,6 @@ class AS_Manager:
 
                 # allocate the client for the current mediator
                 if current_kl_div < last_kl_div:
-                    #print('mokaiwei')
                     last_kl_div = current_kl_div
                     self.mediators_allocate[client_index] = num_mediator
                     allocate_flag[client_index] = 0
@@ -334,11 +319,11 @@ class AS_Manager:
                     if clients_no_allocate < 1:
                         break
                 else:
-                    #print('abb')
                     num_mediator = num_mediator + 1
                     break         # end and save current mediator		
 
-        self.mediators_allocate = np.array([1,2,3,1,2,3,1,2,3,4,5,6,4,5,6,4,5,6,7,8,8,7,7,8])					
+        self.mediators_allocate = np.array([1,2,3,1,2,3,1,2,3,4,5,6,4,5,6,4,5,6,7,8,8,7,7,8])
+        #self.mediators_allocate = np.array([1,2,3,1,2,4,1,3,4,2,3,4])					
         unique_id = np.unique(self.mediators_allocate)
         mediators_client_temp = []
         for j in unique_id:

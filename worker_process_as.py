@@ -44,7 +44,7 @@ HyperParams = {
         'SqueezeNet': ('chestxray2', 0.04, 0.0001)
         }
 
-MODEL, D_ALPHA, IS_INDEPENDENT = 'CNN1', 0.1, True
+MODEL, D_ALPHA, IS_INDEPENDENT = 'CNN', 0.1, True
 INIT_SYNC_FREQ = 10
 
 BATCH_SIZE = 50
@@ -147,8 +147,9 @@ def train():
         logging('\n\n--- start pretrain epoch '+ str(pretrain_epoch_id) + ' ---')
 
         for step, (b_x, b_y) in enumerate(unlabelled):
-            b_x = b_x.cuda()
-            b_y = b_y.cuda()
+            if CUDA:
+                b_x = b_x.cuda()
+                b_y = b_y.cuda()
             #print('b_y: ' + str(b_y))
             b_x = b_x.view(-1, image_size)
             x_reconst, mu, log_var = vae_model(b_x) # Unsupervised learning
@@ -176,8 +177,9 @@ def train():
 
     # Calculate mu for each client
     for step, (b_x, b_y) in enumerate(unlabelled):
-        b_x = b_x.cuda()
-        b_x = b_x.view(-1, image_size)
+        if CUDA:
+            b_x = b_x.cuda()
+            b_x = b_x.view(-1, image_size)
         with torch.no_grad():
             x_reconst, mu, log_var = vae_model(b_x) # Unsupervised learning
         log_sigma = 0.5 * log_var
@@ -195,8 +197,9 @@ def train():
 
     # Calculate sigma for each client
     for step, (b_x, b_y) in enumerate(unlabelled):
-        b_x = b_x.cuda()
-        b_x = b_x.view(-1, image_size)
+        if CUDA:
+            b_x = b_x.cuda()
+            b_x = b_x.view(-1, image_size)
         with torch.no_grad():
             x_reconst, mu, log_var = vae_model(b_x) # Unsupervised learning
         log_sigma = 0.5 * log_var
@@ -236,8 +239,9 @@ def train():
                 size_original = b_x[int(b_x.size()[0]*0.8):b_x.size()[0]].size() # Supervised learning size
                 #size_original = b_x.size()
                 b_y = b_y[int(b_y.size()[0]*0.8):b_y.size()[0]] # Only use 10 percent samples for supervised learning
-                b_x = b_x.cuda()
-                b_y = b_y.cuda()
+                if CUDA:
+                    b_x = b_x.cuda()
+                    b_y = b_y.cuda()
                 b_x = b_x.view(-1, image_size)
                 x_reconst, mu, log_var = vae_model(b_x) # Unsupervised learning
             
@@ -265,8 +269,9 @@ def train():
                 #    print('iter id: ' + str(iter_id))
             '''
             x, y, u = Variable(x), Variable(y), Variable(u)
-            x, y = x.cuda(), y.cuda()
-            u = u.cuda()
+            if CUDA:
+                x, y = x.cuda(), y.cuda()
+                u = u.cuda()
             #logging('y: ' + str(y))
 				
             L = -elbo(x, y)
@@ -292,7 +297,7 @@ def train():
             
             iter_id += 1
         
-            #logging('\niter_id: ' + str(iter_id))
+            logging('\niter_id: ' + str(iter_id))
 
                 #print('current_transferred_client: ' + str(as_manager.current_transferred_client))
             			
@@ -302,8 +307,7 @@ def train():
             if as_manager.sync_within_mediator(model, iter_id):
             #if as_manager.rank == 0 or as_manager.rank == 1:
                 '''
-                accuracy = test(test_loader, model) 
-                #print('mokaiwei')				
+                accuracy = test(test_loader, model) 			
                 if epoch_id != as_manager.last_test_epoch_id and epoch_id != 0:
                     logging('\n - test - accuracy:' + str(accuracy) + ';Reconst Loss:' + str(reconst_loss.item()) + '; round_id:' + str(as_manager.round_id) + '; epoch_id:' + str(epoch_id) + '; iter_id:' + str(iter_id) + '; sync_frequency:' + str(as_manager.sync_frequency) + '; time: ' + str((as_manager.round_id + 0.05*iter_id)/3600.0))
                    # print('loss: ' + str(loss))				
@@ -322,8 +326,8 @@ def train():
                     total_loss, labelled_loss, unlabelled_loss, accuracy = (0, 0, 0, 0)
                     for x, y in validation:
                         x, y = Variable(x), Variable(y)
-
-                        x, y = x.cuda(), y.cuda()
+                        if CUDA:
+                            x, y = x.cuda(), y.cuda()
                
                         L = -elbo(x, y)
                         U = -elbo(x)
@@ -367,8 +371,8 @@ def train():
                     total_loss, labelled_loss, unlabelled_loss, accuracy = (0, 0, 0, 0)
                     for x, y in validation:
                         x, y = Variable(x), Variable(y)
-
-                        x, y = x.cuda(), y.cuda()
+                        if CUDA:
+                            x, y = x.cuda(), y.cuda()
                
                         L = -elbo(x, y)
                         U = -elbo(x)
