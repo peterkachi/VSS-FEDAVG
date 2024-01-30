@@ -2,7 +2,7 @@
 home=$HOME'/adaptive_synchronization'
 
 master='localhost'
-workers='localhost localhost localhost localhost localhost localhost localhost localhost localhost localhost localhost localhost'
+workers='localhost localhost localhost localhost localhost localhost localhost localhost localhost localhost localhost localhost localhost localhost localhost localhost localhost localhost localhost localhost localhost localhost localhost localhost'
 
 echo 'master(coordinator): '$master
 echo 'worker_hosts: '$workers
